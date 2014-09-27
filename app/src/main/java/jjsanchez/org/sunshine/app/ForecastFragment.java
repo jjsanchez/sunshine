@@ -218,11 +218,35 @@ public class ForecastFragment extends Fragment {
          * Prepare the weather high/lows for presentation.
          */
         private String formatHighLows(double high, double low) {
+            String preferredUnits = getUnitsFromPreferences();
+
+            high = convertTemperature(high, preferredUnits);
+            low = convertTemperature(low, preferredUnits);
+
             // For presentation, assume the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
             return roundedHigh + "/" + roundedLow;
+        }
+
+        private double convertTemperature(double temperatureInCelsius, String unitSystem) {
+            if (getString(R.string.pref_units_imperial).equals(unitSystem)) {
+                // transforming to fahrenheit
+                return temperatureInCelsius * 9 / 5 + 32;
+            } else if (!getString(R.string.pref_units_metric).equals(unitSystem)) {
+                Log.d(LOG_TAG, "Unknown unit system: " + unitSystem);
+            }
+            return temperatureInCelsius;
+        }
+
+        private String getUnitsFromPreferences() {
+            String unitPreferenceKey = getString(R.string.pref_units_key);
+            String defaultUnits = getString(R.string.pref_units_metric);
+
+            return PreferenceManager
+                    .getDefaultSharedPreferences(getActivity())
+                    .getString(unitPreferenceKey, defaultUnits);
         }
 
         /**
